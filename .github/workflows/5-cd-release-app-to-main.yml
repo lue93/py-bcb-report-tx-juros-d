@@ -34,7 +34,7 @@ jobs:
       
       - name: Empacotar repositório (tar.gz)
         run: |
-          tar -czf py-bcb-report-tx-juros-d-${{ steps.version.outputs.version }}.tar.gz ./context
+          tar -czf py-bcb-report-tx-juros-d-${{ steps.version.outputs.version }}.tar.gz ./
 
       - name: Criar Release
         uses: actions/create-release@v1
