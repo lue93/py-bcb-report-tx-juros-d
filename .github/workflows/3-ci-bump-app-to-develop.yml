@@ -1,0 +1,35 @@
+name: 3 - [DEV] Build & Deploy
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+    types: closed
+
+jobs:
+  bump-app:
+    name: 3 - [DEV] Bump App
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Configurar ambiente
+        run: sudo apt-get update && sudo apt-get install -y
+
+      - name: Executar script de versionamento
+        run: |
+          ls -la
+          chmod +x versionamento.sh
+          ./versionamento.sh ${{ github.event.pull_request.head.ref }}      
+      
+      - name: Commit and Push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Token para autenticação
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin develop
+          git add .
+          git commit -m "Bump version"
+          git push origin develop

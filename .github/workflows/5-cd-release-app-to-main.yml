@@ -1,0 +1,51 @@
+name: 5 - [PRD] Promote & Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-app:
+    name: Release App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Ler versão com JSON
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' version.json)          
+          echo "VERSION=$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Capture commit messages
+        run: |
+          COMMIT_MESSAGES=$(git log --pretty=oneline)
+          echo "COMMIT_MESSAGES=${COMMIT_MESSAGES}" >> $GITHUB_ENV
+
+      - name: Criar tag
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git tag -a v${{ steps.version.outputs.version }} -m "Release v${{ steps.version.outputs.version }}"
+          git push origin v${{ steps.version.outputs.version }}
+      
+      - name: Empacotar repositório (tar.gz)
+        run: |
+          tar -czf py-bcb-report-tx-juros-d-${{ steps.version.outputs.version }}.tar.gz ./context
+
+      - name: Criar Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          body: |
+            ## Changelog
+            ${{ env.COMMIT_MESSAGES }}
+          release_assets: |
+            py-bcb-report-tx-juros-d-${{ steps.version.outputs.version }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

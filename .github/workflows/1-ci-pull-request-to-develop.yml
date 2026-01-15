@@ -1,0 +1,61 @@
+name: 1 - [FEAT] Build & PR
+
+on:
+  push:
+    branches:
+      - feature/*
+      - fix/*
+      - chore/*
+      - breaking-change/*
+
+jobs:
+  pull-request-to-develop:
+    name: Pull
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Check Pull Request
+        id: check_pr
+        run: |
+          PR_EXISTS=$(gh pr list --head "${{ github.ref_name }}" --json number --jq 'length')
+          echo "pr_exists=$PR_EXISTS" >> $GITHUB_OUTPUT
+          echo "pr_exists: $PR_EXISTS"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Echo Branch
+        run: |
+          echo "Branch: '${{ github.ref_name }}'"
+
+      - name: Validate Pull Request
+        if: steps.check_pr.outputs.pr_exists == '0'
+        uses: repo-sync/pull-request@v2
+        with:
+          destination_branch: "develop"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_label: "feature, automated pr"
+          pr_title: "📦 [PR], develop <- ${{ github.ref_name }} | 💡 Criado por ${{ github.actor }}"
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout Code
+        uses: actions/checkout@v2
+
+      
+      - name: Find PR number via GitHub API
+        id: find_pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_number=$(gh pr list \
+            --repo "${{ github.repository }}" \
+            --head "${{ github.ref_name }}" \
+            --json number \
+            -q '.[0].number')
+          
+          echo "pr=$pr_number" >> $GITHUB_OUTPUT
+
