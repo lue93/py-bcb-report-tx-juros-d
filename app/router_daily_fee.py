@@ -1,8 +1,12 @@
-from fastapi import APIRouter
 
-from exceptions_custom import CustomException
-from file_handler import read
-from json_formatter import to_json
+import json
+
+from fastapi import APIRouter
+from fastapi.responses import JSONResponse
+
+from app.exceptions_custom import CustomException
+from app.file_handler import read
+from app.json_formatter import to_json
 
 router = APIRouter(prefix="/api/v1/historico-taxa-juros-diario", tags=["historico-taxa-juros-diario"])
 

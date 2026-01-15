@@ -1,3 +1,6 @@
+# JSON scrapper data file
+content.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

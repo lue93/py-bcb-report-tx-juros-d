@@ -1,5 +1,5 @@
 
-from exception import CustomException
+from app.exceptions_custom import CustomException
 
 @app.exception_handler(CustomException) 
 async def app_exception_handler(request: Request, exc: CustomException): 
